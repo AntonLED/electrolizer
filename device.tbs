@@ -1,0 +1,65 @@
+include "global.tbh"
+
+
+function modbus_callback_WriteSingleCoil(addr as word, value as low_high) as boolean
+	select case addr
+		case LN1_ADDR:
+			io.num=TBT00_1_S3_L1NAME
+			io.enabled=YES
+			io.state=value
+			stor.setdata(str(value), LN1_E_ADDR)
+			modbus_callback_WriteSingleCoil=true
+			
+		case LN2_ADDR:
+			io.num=TBT00_1_S3_L2NAME
+			io.enabled=YES
+			io.state=value
+			stor.setdata(str(value), LN2_E_ADDR)
+			modbus_callback_WriteSingleCoil=true	
+			
+		case LN3_ADDR:
+			io.num=TBT00_1_S3_L3NAME
+			io.enabled=YES
+			io.state=value
+			stor.setdata(str(value), LN3_E_ADDR)
+			modbus_callback_WriteSingleCoil=true
+			
+		case LN4_ADDR:
+			io.num=TBT00_1_S3_L4NAME
+			io.enabled=YES
+			io.state=value
+			stor.setdata(str(value), LN4_E_ADDR)
+			modbus_callback_WriteSingleCoil=true
+			
+		case LN1_LN2_ADDR:
+			io.num=TBT00_1_S3_L1NAME
+			io.enabled=YES
+			io.state=value
+			stor.setdata(str(value), LN1_E_ADDR)
+			io.num=TBT00_1_S3_L2NAME
+			io.enabled=YES
+			io.state=value
+			stor.setdata(str(value), LN2_E_ADDR)
+			modbus_callback_WriteSingleCoil=true
+			
+		case else:
+			modbus_callback_WriteSingleCoil = false
+	end select
+end function
+
+sub modbus_callback_slave_reply(slave_id as byte, byref slave_reply as string)
+	dim bytes as byte(255) = slave_reply 
+	'slave reply for working in mastermode
+	dim i as byte
+	for i = 0 to len(slave_reply)
+		sys.debugprint(str(bytes(i)))
+	next i
+	sys.debugprint("\n")
+end sub
+
+function float32_to_dec(byref data as string) as float
+	dim sign as word
+	dim exp as word
+	dim mantis as float
+	
+end function

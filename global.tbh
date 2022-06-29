@@ -1,0 +1,42 @@
+'DEFINES-------------------------------------------------------------
+'Setup tibbit 01
+const TBT00_1_S3_L1NAME = PL_IO_NUM_32
+const TBT00_1_S3_L2NAME = PL_IO_NUM_33
+const TBT00_1_S3_L3NAME = PL_IO_NUM_4
+const TBT00_1_S3_L4NAME = PL_IO_NUM_20_INT4
+'Setup tibbit 05
+const SER_TBT05_S5 = 1
+const TBT05_S5_TX = PL_IO_NUM_11_TX1
+const TBT05_S5_RX = PL_IO_NUM_10_RX1
+'setup modbus-slave-mode addresses
+const LN1_ADDR = 1
+const LN2_ADDR = 2
+const LN3_ADDR = 3
+const LN4_ADDR = 4
+const LN1_LN2_ADDR = 5
+'setup EEPROM addresses
+const LN1_E_ADDR = 1
+const LN2_E_ADDR = 2
+const LN3_E_ADDR = 3
+const LN4_E_ADDR = 4
+'setup platform settings for modbus 
+#define MODBUS_MASTERMODE_SOCKS_MAX 0
+#define MODBUS_SLAVEMODE_SOCKS_MAX 2
+#define NUM_OF_IO 49
+#define MODBUS_SLAVES_COUNT 0
+#define MODBUS_UNIT_ID 10 
+
+'INCLUDES------------------------------------------------------------
+include "sock\trunk\sock.tbh"
+include "modbus.tbh"
+
+'DECLARATIONS--------------------------------------------------------
+'network settings 
+declare device_net_ip as string
+declare device_net_mask as string
+declare deivice_net_gateway as string
+'declare functions 
+declare sub boot()
+declare sub modbus_callback_slave_reply(slave_id as byte, byref slave_reply as string)
+declare function modbus_callback_WriteSingleCoil(address as word, value as low_high) as boolean
+declare function float32_to_dec(byref data as string) as float

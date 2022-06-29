@@ -1,0 +1,60 @@
+include "global.tbh"
+
+
+sub boot()
+	'net setup
+	dim device_net_ip as string
+	dim device_net_mask as string
+	dim device_net_gateway as string
+	device_net_ip = "192.168.1.210"
+	device_net_mask = "255.255.255.0"
+	device_net_gateway = "0.0.0.0"
+		
+	net.ip = device_net_ip
+	net.netmask = device_net_mask
+	net.gatewayip = device_net_gateway
+	
+	'setup tibbits
+	'TBT01 setup on socket #1 
+	io.num = TBT00_1_S3_L1NAME
+	io.enabled = YES
+	io.state = val(stor.getdata(LN1_E_ADDR, 1))
+	io.num = TBT00_1_S3_L2NAME
+	io.enabled = YES
+	io.state = val(stor.getdata(LN2_E_ADDR, 1))
+	io.num = TBT00_1_S3_L3NAME
+	io.enabled = YES
+	io.state = val(stor.getdata(LN3_E_ADDR, 1))
+	io.num = TBT00_1_S3_L4NAME
+	io.enabled = YES
+	io.state = val(stor.getdata(LN4_E_ADDR, 1))
+	'TBT05 ons socket #5
+	io.num = PL_IO_NUM_1
+    io.enabled = YES
+    io.state = HIGH
+	
+    ser.num = SER_TBT05_S5
+    ser.parity = PL_SER_PR_NONE
+    ser.bits = PL_SER_BB_8
+    ser.flowcontrol = PL_SER_FC_DISABLED
+    ser.baudrate = PL_SER_BAUD_9600 '9600 baud
+    ser.interface = PL_SER_SI_HALFDUPLEX
+    ser.esctype = PL_SER_ET_DISABLED
+    ser.interchardelay = 0
+	ser.txbuffrq(1)
+    ser.rxbuffrq(1)
+    sys.buffalloc()
+	ser.enabled = YES
+	
+	'modbus init
+	if modbus_init() = true then
+		pat.play("G-G-G-", PL_PAT_CANINT)
+	else 
+		pat.play("R-R-R-", PL_PAT_CANINT)
+	end if
+	
+	
+	
+	
+	
+end sub

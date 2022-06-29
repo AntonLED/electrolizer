@@ -1,0 +1,81 @@
+include "global.tbh"
+
+
+
+sub on_sys_init()
+	boot()
+end sub
+
+sub on_sys_timer()
+	sock.num = modbus_slavemode_socks(0).socket
+	sys.debugprint("MBS sock # 1: " + str(sock.state) + "\n")
+	sys.debugprint(str(sock.localport) + "\n")
+	sock.num =  modbus_slavemode_socks(1).socket
+	sys.debugprint("MBS sock # 2: " + str(sock.state) + "\n")
+	
+	sys.debugprint("----------------\n")
+
+
+
+'	sock.num = modbus_slavemode_socks(0).socket
+'	sys.debugprint("MBS sock # 1: "+ str(sock.statesimple) + "\n")
+'	sock.num = modbus_slavemode_socks(1).socket
+'	sys.debugprint("MBS sock # 2: "+ str(sock.statesimple) + "\n")
+	
+''	sock.num = modbus_mastermode_socks(0).socket
+''	sys.debugprint("MBM sock # 1: "+ str(sock.statesimple) + "\n")
+''	sock.num = modbus_mastermode_socks(1).socket
+''	sys.debugprint("MBM sock # 2: "+ str(sock.statesimple) + "\n")
+''	sock.num = modbus_mastermode_socks(2).socket
+''	sys.debugprint("MBM sock # 3: "+ str(sock.statesimple) + "\n")
+	
+'	sys.debugprint("\n")
+end sub
+
+sub on_sock_data_arrival()
+	dim data as string
+	
+	dim f as byte
+	for f = 0 to MODBUS_SLAVEMODE_SOCKS_MAX - 1
+		if sock.num = modbus_slavemode_socks(f).socket then
+			data = sock.getdata(255)
+			
+			modbus_slavemode_tcp_recieve(data, sock.num)
+		end if
+	next f
+	
+'	dim g as byte
+'	for g = 0 to MODBUS_MASTERMODE_SOCKS_MAX - 1
+'		if sock.num = modbus_mastermode_socks(g).socket then 
+'			data = sock.getdata(255)
+			
+'			modbus_mastermode_tcp_recieve(data, sock.num)
+'		end if
+'	next g
+end sub
+
+
+sub on_button_pressed()
+	dim data as string
+	data = ""
+	
+	dim transId as word = 1
+	dim protId as word = 0
+	dim modbusUnitId as byte = 1
+	
+	dim fstAddrH as byte = 3
+	dim fstAddrL as byte = 232
+	dim cntH as byte = 0
+	dim cntL as byte = 1
+	
+	data = data + chr(fstAddrH and &hff)
+	data = data + chr(fstAddrL and &hff)
+	data = data + chr(cntH and &hff)
+	data = data + chr(cntL and &hff)
+		
+	dim i as byte
+	for i = 0 to MODBUS_MASTERMODE_SOCKS_MAX - 1
+		modbus_tcp_send(modbus_mastermode_socks(i).socket, transId, protId, modbusUnitId, ReadInputRegisters, data)
+	next i
+	
+end sub
