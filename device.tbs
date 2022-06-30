@@ -42,6 +42,10 @@ function modbus_callback_WriteSingleCoil(addr as word, value as low_high) as boo
 			stor.setdata(str(value), LN2_E_ADDR)
 			modbus_callback_WriteSingleCoil=true
 			
+		case 0:
+			transmitt_data()
+			modbus_callback_WriteSingleCoil=true
+
 		case else:
 			modbus_callback_WriteSingleCoil = false
 	end select
@@ -61,5 +65,79 @@ function float32_to_dec(byref data as string) as float
 	dim sign as word
 	dim exp as word
 	dim mantis as float
+end function
+
+function mastermode_socks_close() as boolean
+
+	dim i as byte 
+	for i = 0 to MODBUS_MASTERMODE_SOCKS_MAX - 1
+		sock.num = modbus_mastermode_socks(i).socket
+		sock.close
+		dim time as word
+		time = sys.timercount
+		while sock.statesimple<>PL_SSTS_CLOSED 'here we wait for the connection to be closed
+			if sys.timercount - time > 20 then goto break1
+		wend
+break1:
+		if sock.statesimple = PL_SSTS_CLOSED then 
+			pat.play("G--G--G", PL_PAT_CANINT)
+			mastermode_socks_close = true
+		end if
+		if sock.statesimple <> PL_SSTS_CLOSED then
+			pat.play("R--R--R", PL_PAT_CANINT)
+			mastermode_socks_close = false
+		end if
+	next i
 	
+end function
+
+function outgoing_connect(index as byte) as boolean
+	if MODBUS_MASTERMODE_SOCKS_MAX <> 0 then 
+		modbus_slaves_ip_list(0) = "192.168.1.98"
+'		modbus_slaves_ip_list(1) = "192.168.1.102" 
+'		modbus_slaves_ip_list(2) = "192.168.1.51"
+		'socks allocation for modbus mastermode
+		dim j as byte
+		for j = 0 to MODBUS_MASTERMODE_SOCKS_MAX - 1
+			modbus_mastermode_socks(j).socket = j + index
+			'outgoing connection
+			sock.num = modbus_mastermode_socks(j).socket
+			sock.protocol = PL_SOCK_PROTOCOL_TCP
+			sock.allowedinterfaces = "NET,WLN"
+			sock.targetinterface = PL_SOCK_INTERFACE_NET
+	sock.reconmode = PL_SOCK_RECONMODE_2
+			sock.targetip = modbus_slaves_ip_list(j)
+			sock.targetport = 502
+			if sock.txbuffrq(1) <> 1 or sock.rxbuffrq(1) <> 1 then
+				outgoing_connect = false
+				exit function 
+			end if 
+			sys.buffalloc
+			
+			sock.close
+			while sock.statesimple<>PL_SSTS_CLOSED 'here we wait for the connection to be closed
+				doevents
+			wend
+			doevents
+			sock.connect
+			dim time as word
+			time = sys.timercount
+			while sock.statesimple <> PL_SSTS_EST 
+				'pat.play("G----G----G", PL_PAT_NOINT)
+				doevents
+				if sys.timercount - time > 20 then goto break
+				
+			wend
+			doevents
+break:
+			if sock.statesimple = PL_SSTS_EST then 
+				pat.play("G--G--G", PL_PAT_CANINT)
+				outgoing_connect = true
+			end if
+			if sock.statesimple <> PL_SSTS_EST then
+				pat.play("R--R--R", PL_PAT_CANINT)
+				outgoing_connect = false
+			end if
+		next j	
+	end if
 end function

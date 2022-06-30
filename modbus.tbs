@@ -22,10 +22,9 @@ function modbus_init() as boolean
 		sock.num = modbus_slavemode_socks(i).socket
 		sock.protocol = PL_SOCK_PROTOCOL_TCP
 		sock.localportlist = portlist
-		sock.connectiontout = 600 
+		sock.connectiontout = 1
 		sock.allowedinterfaces = "NET,PPP"
 		sock.inconmode = PL_SOCK_INCONMODE_ANY_IP_ANY_PORT
-		sock.reconmode = PL_SOCK_RECONMODE_0
 		'buffs allocation 
 		if sock.txbuffrq(1) <> 1 or sock.rxbuffrq(1) <> 1 then
 			modbus_init = false
@@ -34,48 +33,7 @@ function modbus_init() as boolean
 		sys.buffalloc
 	next i
 	
-	if MODBUS_MASTERMODE_SOCKS_MAX <> 0 then 
-'		modbus_slaves_ip_list(0) = "192.168.1.98"
-'		modbus_slaves_ip_list(1) = "192.168.1.102" 
-'		modbus_slaves_ip_list(2) = "192.168.1.51"
-		'socks allocation for modbus mastermode
-		dim j as byte
-		for j = 0 to MODBUS_MASTERMODE_SOCKS_MAX - 1
-			modbus_mastermode_socks(j).socket = j + i + 1
-			'outgoing connection
-			sock.num = modbus_mastermode_socks(j).socket
-			sock.protocol = PL_SOCK_PROTOCOL_TCP
-			sock.allowedinterfaces = "NET,WLN"
-			sock.targetinterface = PL_SOCK_INTERFACE_NET
-			sock.targetip = modbus_slaves_ip_list(j)
-			sock.targetport = 502
-			if sock.txbuffrq(1) <> 1 or sock.rxbuffrq(1) <> 1 then
-				modbus_init = false
-				exit function 
-			end if 
-			sys.buffalloc
-			
-			sock.close
-			while sock.statesimple<>PL_SSTS_CLOSED 'here we wait for the connection to be closed
-				
-			wend
-			
-			sock.connect
-			dim time as word
-			time = sys.timercount
-			while sock.statesimple <> PL_SSTS_EST 
-				'pat.play("G----G----G", PL_PAT_NOINT)
-				if sys.timercount - time > 20 then goto break
-			wend
-break:
-			if sock.statesimple = PL_SSTS_EST then 
-				pat.play("G--G--G", PL_PAT_CANINT)
-			end if
-			if sock.statesimple <> PL_SSTS_EST then
-				pat.play("R--R--R", PL_PAT_CANINT)
-			end if
-		next j	
-	end if
+	modbus_init = modbus_init and outgoing_connect(i + 1)
 	
 end function
 
@@ -158,7 +116,7 @@ end sub
 sub modbus_mastermode_tcp_recieve(byref data as string, tcp_sock as byte)
 
 	beep.divider = 43000
-	beep.play("B-B-B", PL_BEEP_CANINT)
+	beep.play("B", PL_BEEP_CANINT)
 
 	dim transId as word
 	dim protId as word 
@@ -184,6 +142,7 @@ sub modbus_mastermode_tcp_recieve(byref data as string, tcp_sock as byte)
 	
 	sock.num = tcp_sock
 	sys.debugprint(sock.remoteip + "\n")
+	
 	modbus_callback_slave_reply(modbusUnitId, modbus_str)
 end sub
 
@@ -201,3 +160,44 @@ sub modbus_tcp_send(tcp_sock as byte, transId as word, protId as word,  modbusUn
 	sock.setdata(data)
 	sock.send()
 end sub
+
+function reconnect() as boolean
+	dim j as byte
+	for j = 0 to MODBUS_MASTERMODE_SOCKS_MAX - 1
+		sock.num = modbus_mastermode_socks(j).socket
+	    
+'		sock.protocol = PL_SOCK_PROTOCOL_TCP
+'			sock.allowedinterfaces = "NET,WLN"
+'			sock.targetinterface = PL_SOCK_INTERFACE_NET
+'	'sock.reconmode = PL_SOCK_RECONMODE_2
+'			sock.targetip = modbus_slaves_ip_list(j)
+'			sock.targetport = 502
+'			if sock.txbuffrq(1) <> 1 or sock.rxbuffrq(1) <> 1 then
+'				reconnect = false
+'				exit function 
+'			end if 
+'			sys.buffalloc
+		
+		sock.close
+		while sock.statesimple<>PL_SSTS_CLOSED 'here we wait for the connection to be closed
+			
+		wend
+		
+		sock.connect
+		dim time as word
+		time = sys.timercount
+		while sock.statesimple <> PL_SSTS_EST 
+			pat.play("G----G----G", PL_PAT_NOINT)
+			if sys.timercount - time > 5 then goto break1
+		wend
+break1:
+		if sock.statesimple = PL_SSTS_EST then 
+			pat.play("G--G--G", PL_PAT_CANINT)
+			reconnect = true
+		end if
+		if sock.statesimple <> PL_SSTS_EST then
+			pat.play("R--R--R", PL_PAT_CANINT)
+			reconnect = false
+		end if
+	next j	
+end function

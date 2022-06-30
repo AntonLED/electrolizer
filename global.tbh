@@ -20,10 +20,10 @@ const LN2_E_ADDR = 2
 const LN3_E_ADDR = 3
 const LN4_E_ADDR = 4
 'setup platform settings for modbus 
-#define MODBUS_MASTERMODE_SOCKS_MAX 0
+#define MODBUS_MASTERMODE_SOCKS_MAX 1
 #define MODBUS_SLAVEMODE_SOCKS_MAX 2
 #define NUM_OF_IO 49
-#define MODBUS_SLAVES_COUNT 0
+#define MODBUS_SLAVES_COUNT 1
 #define MODBUS_UNIT_ID 10 
 
 'INCLUDES------------------------------------------------------------
@@ -40,3 +40,9 @@ declare sub boot()
 declare sub modbus_callback_slave_reply(slave_id as byte, byref slave_reply as string)
 declare function modbus_callback_WriteSingleCoil(address as word, value as low_high) as boolean
 declare function float32_to_dec(byref data as string) as float
+
+declare function outgoing_connect(index as byte) as boolean
+declare function mastermode_socks_close() as boolean
+declare function reconnect() as boolean
+
+declare sub transmitt_data()
