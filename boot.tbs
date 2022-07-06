@@ -37,8 +37,4 @@ sub boot()
 		pat.play("R-R-R-", PL_PAT_CANINT)
 	end if
 	
-	
-	
-	
-	
 end sub

@@ -41,24 +41,29 @@ function modbus_callback_WriteSingleCoil(addr as word, value as low_high) as boo
 			io.state=value
 			stor.setdata(str(value), LN2_E_ADDR)
 			modbus_callback_WriteSingleCoil=true
-			
-		case 0:
-			transmitt_data()
-			modbus_callback_WriteSingleCoil=true
 
 		case else:
 			modbus_callback_WriteSingleCoil = false
 	end select
 end function
 
-sub modbus_callback_slave_reply(slave_id as byte, byref slave_reply as string)
+sub modbus_callback_slave_reply(tcp_sock as byte, slave_id as byte, byref slave_reply as string)
 	dim bytes as byte(255) = slave_reply 
-	'slave reply for working in mastermode
+	
+	sock.num = tcp_sock
+	
+	sys.debugprint("data from IP: " + sock.remoteip + "\n")
 	dim i as byte
-	for i = 0 to len(slave_reply)
-		sys.debugprint(str(bytes(i)))
-	next i
+	for i = 1 to len(slave_reply)
+		sys.debugprint(str(asc(mid(slave_reply, i, 1))) + " ")
+	next i	
 	sys.debugprint("\n")
+'	dim j as byte 
+'	for j = 0 to len(slave_reply) - 1
+'		sys.debugprint(str(bytes(j)) + " ")
+'	next j
+'	sys.debugprint("\n")
+	recv_flag = true
 end sub
 
 function float32_to_dec(byref data as string) as float
@@ -67,77 +72,19 @@ function float32_to_dec(byref data as string) as float
 	dim mantis as float
 end function
 
-function mastermode_socks_close() as boolean
-
-	dim i as byte 
-	for i = 0 to MODBUS_MASTERMODE_SOCKS_MAX - 1
-		sock.num = modbus_mastermode_socks(i).socket
-		sock.close
-		dim time as word
-		time = sys.timercount
-		while sock.statesimple<>PL_SSTS_CLOSED 'here we wait for the connection to be closed
-			if sys.timercount - time > 20 then goto break1
-		wend
-break1:
-		if sock.statesimple = PL_SSTS_CLOSED then 
-			pat.play("G--G--G", PL_PAT_CANINT)
-			mastermode_socks_close = true
-		end if
-		if sock.statesimple <> PL_SSTS_CLOSED then
-			pat.play("R--R--R", PL_PAT_CANINT)
-			mastermode_socks_close = false
-		end if
-	next i
+sub transmitt_data(tcp_sock as byte)
+	dim data as string
+	data = ""
 	
-end function
-
-function outgoing_connect(index as byte) as boolean
-	if MODBUS_MASTERMODE_SOCKS_MAX <> 0 then 
-		modbus_slaves_ip_list(0) = "192.168.1.98"
-'		modbus_slaves_ip_list(1) = "192.168.1.102" 
-'		modbus_slaves_ip_list(2) = "192.168.1.51"
-		'socks allocation for modbus mastermode
-		dim j as byte
-		for j = 0 to MODBUS_MASTERMODE_SOCKS_MAX - 1
-			modbus_mastermode_socks(j).socket = j + index
-			'outgoing connection
-			sock.num = modbus_mastermode_socks(j).socket
-			sock.protocol = PL_SOCK_PROTOCOL_TCP
-			sock.allowedinterfaces = "NET,WLN"
-			sock.targetinterface = PL_SOCK_INTERFACE_NET
-	sock.reconmode = PL_SOCK_RECONMODE_2
-			sock.targetip = modbus_slaves_ip_list(j)
-			sock.targetport = 502
-			if sock.txbuffrq(1) <> 1 or sock.rxbuffrq(1) <> 1 then
-				outgoing_connect = false
-				exit function 
-			end if 
-			sys.buffalloc
-			
-			sock.close
-			while sock.statesimple<>PL_SSTS_CLOSED 'here we wait for the connection to be closed
-				doevents
-			wend
-			doevents
-			sock.connect
-			dim time as word
-			time = sys.timercount
-			while sock.statesimple <> PL_SSTS_EST 
-				'pat.play("G----G----G", PL_PAT_NOINT)
-				doevents
-				if sys.timercount - time > 20 then goto break
-				
-			wend
-			doevents
-break:
-			if sock.statesimple = PL_SSTS_EST then 
-				pat.play("G--G--G", PL_PAT_CANINT)
-				outgoing_connect = true
-			end if
-			if sock.statesimple <> PL_SSTS_EST then
-				pat.play("R--R--R", PL_PAT_CANINT)
-				outgoing_connect = false
-			end if
-		next j	
-	end if
-end function
+	dim transId as word = 1
+	dim protId as word = 0
+	dim modbusUnitId as byte = 1
+	
+	dim addr as word = 7520
+	dim cnt as word = 2
+	
+	data = data + chr(addr shr 8) + chr(addr and &hff)
+	data = data + chr(cnt shr 8) + chr(cnt and &hff)
+		
+	modbus_mastermode_tcp_send(tcp_sock, transId, protId, modbusUnitId, ReadInputRegisters, data)
+end sub

@@ -25,7 +25,13 @@ declare modbus_slaves_ip_list(MODBUS_SLAVES_COUNT) as string
 declare function modbus_init() as boolean
 declare sub modbus_mastermode_tcp_recieve(byref data as string, tcp_sock as byte)
 declare sub modbus_slavemode_tcp_recieve(byref data as string, tcp_sock as byte)
-declare function data_prepare(byref data as string) as string
 declare sub modbus_tcp_send(tcp_sock as byte, trans_id as word, prot_id as word, 
 							unit_id as byte, modbus_func as modbusFunctions, 
 							byref data as string)
+declare sub modbus_mastermode_tcp_send(tcp_sock as byte, trans_id as word, prot_id as word,
+							unit_id as byte, modbus_func as modbusFunctions,
+							byref data as string)
+							
+declare function outgoing_connect(tcp_sock as byte) as boolean
+declare function outgoing_close(tcp_sock as byte) as boolean
+declare sub transmitt_data(tcp_sock as byte)

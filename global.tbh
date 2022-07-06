@@ -20,29 +20,34 @@ const LN2_E_ADDR = 2
 const LN3_E_ADDR = 3
 const LN4_E_ADDR = 4
 'setup platform settings for modbus 
-#define MODBUS_MASTERMODE_SOCKS_MAX 1
+#define MODBUS_MASTERMODE_SOCKS_MAX 3
 #define MODBUS_SLAVEMODE_SOCKS_MAX 2
 #define NUM_OF_IO 49
-#define MODBUS_SLAVES_COUNT 1
+#define MODBUS_SLAVES_COUNT 3
 #define MODBUS_UNIT_ID 10 
+
+#define TIMEOUT 20
 
 'INCLUDES------------------------------------------------------------
 include "sock\trunk\sock.tbh"
 include "modbus.tbh"
 
 'DECLARATIONS--------------------------------------------------------
+declare global_flag as boolean
+declare global_counter as byte
+declare recv_flag as boolean
+declare cur_slave_num as byte
+
+declare temp1 as float 
+declare temp2 as float 
+declare temp3 as float 
 'network settings 
 declare device_net_ip as string
 declare device_net_mask as string
 declare deivice_net_gateway as string
 'declare functions 
 declare sub boot()
-declare sub modbus_callback_slave_reply(slave_id as byte, byref slave_reply as string)
+declare sub modbus_callback_slave_reply(tcp_sock as byte, slave_id as byte, byref slave_reply as string)
 declare function modbus_callback_WriteSingleCoil(address as word, value as low_high) as boolean
 declare function float32_to_dec(byref data as string) as float
 
-declare function outgoing_connect(index as byte) as boolean
-declare function mastermode_socks_close() as boolean
-declare function reconnect() as boolean
-
-declare sub transmitt_data()

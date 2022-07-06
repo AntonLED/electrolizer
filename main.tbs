@@ -1,41 +1,54 @@
 include "global.tbh"
 
 
+dim global_flag as boolean = true
+dim global_counter as byte = 0
+dim recv_flag as boolean = false
+dim cur_slave_num as byte = 0
 
 sub on_sys_init()
 	boot()
 end sub
 
 sub on_sys_timer()
-	dim state1 as byte
-	dim state2 as byte 
-	
-	sock.num = modbus_slavemode_socks(0).socket
-	sys.debugprint("MBS sock # 1: " + str(sock.state) + "\n")
-	sock.num =  modbus_slavemode_socks(1).socket
-	sys.debugprint("MBS sock # 2: " + str(sock.state) + "\n")
-	
-	sock.num = modbus_mastermode_socks(0).socket
-	sys.debugprint("MBM sock # 1: "+ str(sock.state) + "\n")
-	state1 = sock.statesimple
-	
-'	sock.num = modbus_mastermode_socks(1).socket
-'	sys.debugprint("MBM sock # 2: "+ str(sock.state) + "\n")
-	sys.debugprint("----------------\n")
-'	state2 = sock.statesimple
-	
-'	if state1 <> 4 or state2 <> 4 then
-'		reconnect()
-'	end if
-'	sock.num = modbus_slavemode_socks(0).socket
-'	sys.debugprint("MBS sock # 1: "+ str(sock.statesimple) + "\n")
-'	sock.num = modbus_slavemode_socks(1).socket
-'	sys.debugprint("MBS sock # 2: "+ str(sock.statesimple) + "\n")
-	
+	if global_flag = true then
+		sock.num = modbus_mastermode_socks(cur_slave_num).socket
 
-''	sys.debugprint("MBM sock # 3: "+ str(sock.statesimple) + "\n")
+		if recv_flag = false then
+			if sock.statesimple <> PL_SSTS_EST then 
+				if outgoing_connect(sock.num) = false then
+					sys.debugprint("loooose\n")
+					sys.debugprint(sock.targetip + "\n")
+					cur_slave_num = cur_slave_num + 1
+				else 
+					sys.debugprint("connect!!\n")
+				end if
+			end if
+			if sock.statesimple = PL_SSTS_EST then
+				transmitt_data(sock.num)
+			end if
+		end if
+		if recv_flag = true then
+			recv_flag = false
+			outgoing_close(sock.num)
+			cur_slave_num = cur_slave_num + 1
+		end if
+		
+		if cur_slave_num = MODBUS_SLAVES_COUNT then
+			cur_slave_num = 0
+			global_flag = false
+		end if
+	end if
 	
-'	sys.debugprint("\n")
+	if global_flag = false then
+		global_counter = global_counter + 1
+		if global_counter = TIMEOUT then
+			global_counter = 0
+			global_flag = true
+		end if
+	end if
+
+	sys.debugprint("--------------------\n")
 end sub
 
 sub on_sock_data_arrival()
@@ -50,66 +63,9 @@ sub on_sock_data_arrival()
 		end if
 	next f
 	
-	dim g as byte
-	for g = 0 to MODBUS_MASTERMODE_SOCKS_MAX - 1
-		if sock.num = modbus_mastermode_socks(g).socket then 
-			data = sock.getdata(255)
-			
-			modbus_mastermode_tcp_recieve(data, sock.num)
-		end if
-	next g
-end sub
+	if sock.num = modbus_mastermode_socks(cur_slave_num).socket then 
+		data = sock.getdata(255)
+		modbus_mastermode_tcp_recieve(data, sock.num)
+	end if
 
-
-sub transmitt_data()
-	dim data as string
-	data = ""
-	
-	dim transId as word = 1
-	dim protId as word = 0
-	dim modbusUnitId as byte = 1
-	
-	dim fstAddrH as byte = 3
-	dim fstAddrL as byte = 232
-	dim cntH as byte = 0
-	dim cntL as byte = 1
-	
-	data = data + chr(fstAddrH and &hff)
-	data = data + chr(fstAddrL and &hff)
-	data = data + chr(cntH and &hff)
-	data = data + chr(cntL and &hff)
-		
-	dim i as byte
-	for i = 0 to MODBUS_MASTERMODE_SOCKS_MAX - 1
-		modbus_tcp_send(modbus_mastermode_socks(i).socket, transId, protId, modbusUnitId, ReadInputRegisters, data)
-	next i
-end sub
-
-'sub on_button_pressed()
-'	dim data as string
-'	data = ""
-	
-'	dim transId as word = 1
-'	dim protId as word = 0
-'	dim modbusUnitId as byte = 1
-	
-'	dim fstAddrH as byte = 3
-'	dim fstAddrL as byte = 232
-'	dim cntH as byte = 0
-'	dim cntL as byte = 1
-	
-'	data = data + chr(fstAddrH and &hff)
-'	data = data + chr(fstAddrL and &hff)
-'	data = data + chr(cntH and &hff)
-'	data = data + chr(cntL and &hff)
-		
-'	dim i as byte
-'	for i = 0 to MODBUS_MASTERMODE_SOCKS_MAX - 1
-'		modbus_tcp_send(modbus_mastermode_socks(i).socket, transId, protId, modbusUnitId, ReadInputRegisters, data)
-'	next i
-	
-'end subreconmode
-
-sub on_button_pressed()
-	reconnect()
 end sub
