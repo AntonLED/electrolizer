@@ -7,7 +7,7 @@ sub boot()
 	dim device_net_ip as string
 	dim device_net_mask as string
 	dim device_net_gateway as string
-	device_net_ip = "192.168.1.210"
+	device_net_ip = "192.168.1.213"
 	device_net_mask = "255.255.255.0"
 	device_net_gateway = "0.0.0.0"
 		

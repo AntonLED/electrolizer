@@ -31,15 +31,15 @@ function modbus_init() as boolean
 		end if
 		sys.buffalloc
 	next i
-	'name socks for mastermode
-	dim j as byte 
-	for j = 0 to MODBUS_MASTERMODE_SOCKS_MAX - 1
-		modbus_mastermode_socks(j).socket = j + i
-	next j	
-	'setting targets IPs
-	modbus_slaves_ip_list(0) = "192.168.1.98"
-	modbus_slaves_ip_list(1) = "192.168.1.102"
-	modbus_slaves_ip_list(2) = "192.168.1.51"
+'	'name socks for mastermode
+'	dim j as byte 
+'	for j = 0 to MODBUS_MASTERMODE_SOCKS_MAX - 1
+'		modbus_mastermode_socks(j).socket = j + i
+'	next j	
+'	'setting targets IPs
+'	modbus_slaves_ip_list(0) = "192.168.1.98"
+'	modbus_slaves_ip_list(1) = "192.168.1.102"
+'	modbus_slaves_ip_list(2) = "192.168.1.51"
 	
 	
 	
