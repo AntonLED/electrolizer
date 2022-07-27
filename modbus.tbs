@@ -73,6 +73,16 @@ sub modbus_slavemode_tcp_recieve(byref data as string, tcp_sock as byte)
 		select case modbusFunc 
 			case ReadCoilStatus:
 				'some code 
+				modbusStartRef = asc(mid(data, 9, 1)) * 256 + asc(mid(data, 10, 1))
+				modbusCount = asc(mid(data, 11, 1)) * 256 + asc(mid(data, 12, 1))
+				
+				modbus_str = chr((modbusCount) and &hff)
+				
+				modbusVal = modbus_callback_ReadCoilStatus(modbusStartRef)
+				modbus_str = modbus_str + chr(modbusVal and &Hff)
+				
+				modbus_tcp_send(tcp_sock, transId, protId, modbusUnitId, ReadCoilStatus, modbus_str)
+
 			case ReadDiscreteInputs:
 				'somde code
 			case ReadHoldingRegisters:
@@ -90,7 +100,7 @@ sub modbus_slavemode_tcp_recieve(byref data as string, tcp_sock as byte)
 						modbusVal = sock.statesimple 
 						modbus_str = modbus_str + chr((modbusVal shr 8) and &Hff) + chr(modbusVal and &Hff)
 					else 
-						modbusVal = 13 'someting you need
+						modbusVal = 14 'someting you need
 						modbus_str = modbus_str + chr((modbusVal shr 8) and &hff) + chr(modbusVal and &hff)
 					end if
 				next i
