@@ -26,7 +26,7 @@ const LN3_E_ADDR = 3
 const LN4_E_ADDR = 4
 'setup platform settings for modbus 
 #define MODBUS_MASTERMODE_SOCKS_MAX 3
-#define MODBUS_SLAVEMODE_SOCKS_MAX 2
+#define MODBUS_SLAVEMODE_SOCKS_MAX 7
 #define NUM_OF_IO 49
 #define MODBUS_SLAVES_COUNT 3
 #define MODBUS_UNIT_ID 5

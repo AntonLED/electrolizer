@@ -57,3 +57,17 @@ format=65001
 condition=
 locked=no
 location=project
+[file7]
+path=sock\trunk\sock.tbh
+type=header
+format=
+condition=
+locked=yes
+location=commonlib
+[file8]
+path=sock\trunk\sock.tbs
+type=basic
+format=
+condition=
+locked=yes
+location=commonlib

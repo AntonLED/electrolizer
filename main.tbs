@@ -51,6 +51,15 @@ end sub
 '	sys.debugprint("--------------------\n")
 'end sub
 
+sub on_sys_timer()
+	dim i as byte 
+	for i = 0 to MODBUS_SLAVEMODE_SOCKS_MAX - 1
+		sock.num = modbus_slavemode_socks(i).socket
+		sys.debugprint(str(sock.state) + " ")
+	next i
+	sys.debugprint("\n\n")
+end sub
+
 sub on_sock_data_arrival()
 	dim data as string
 	
@@ -58,10 +67,12 @@ sub on_sock_data_arrival()
 	for f = 0 to MODBUS_SLAVEMODE_SOCKS_MAX - 1
 		if sock.num = modbus_slavemode_socks(f).socket then
 			data = sock.getdata(255)
-			sys.debugprint(sock.remoteip + "\n")
+			sys.debugprint(sock.remoteip + " " + str(sock.remoteport) + "\n\n")
 			modbus_slavemode_tcp_recieve(data, sock.num)
 		end if
 	next f
+	
+	sys.debugprint("\n")
 	
 '	if sock.num = modbus_mastermode_socks(cur_slave_num).socket then 
 '		data = sock.getdata(255)
@@ -69,3 +80,7 @@ sub on_sock_data_arrival()
 '	end if
 
 end sub
+
+'sub on_sock_event(state as pl_sock_state, statesimple as pl_sock_state_simple)
+'	sys.debugprint("state: " + str(state) + "\n")
+'end sub

@@ -1,7 +1,6 @@
 include "global.tbh"
 
 
-' SOLVE PROBLEMS WITH SOCK LIB!!!!
 dim modbus_mastermode_socks(MODBUS_MASTERMODE_SOCKS_MAX) as modbus_socket
 dim modbus_slavemode_socks(MODBUS_SLAVEMODE_SOCKS_MAX) as modbus_socket
 dim modbus_slaves_ip_list(MODBUS_SLAVES_COUNT) as string
@@ -16,14 +15,18 @@ function modbus_init() as boolean
 	'socks allocation for modbus slavemode
 	dim i as byte
 	for i = 0 to MODBUS_SLAVEMODE_SOCKS_MAX - 1
-		modbus_slavemode_socks(i).socket = i
+		modbus_slavemode_socks(i).socket = sock_get("MBSM" + str(i))
 		'incoming connection setup
 		sock.num = modbus_slavemode_socks(i).socket
 		sock.protocol = PL_SOCK_PROTOCOL_TCP
-		sock.localportlist = portlist
-		sock.connectiontout = 1
-		sock.allowedinterfaces = "NET,PPP"
+		
+		sock.connectiontout = 2
+		
+		sock.allowedinterfaces = "NET"
 		sock.inconmode = PL_SOCK_INCONMODE_ANY_IP_ANY_PORT
+		
+		sock.localportlist = portlist
+		
 		'buffs allocation 
 		if sock.txbuffrq(1) <> 1 or sock.rxbuffrq(1) <> 1 then
 			modbus_init = false
@@ -34,15 +37,13 @@ function modbus_init() as boolean
 '	'name socks for mastermode
 '	dim j as byte 
 '	for j = 0 to MODBUS_MASTERMODE_SOCKS_MAX - 1
-'		modbus_mastermode_socks(j).socket = j + i
+'		modbus_mastermode_socks(j).socket = sock_get("MBMM" + str(j))
 '	next j	
 '	'setting targets IPs
 '	modbus_slaves_ip_list(0) = "192.168.1.98"
 '	modbus_slaves_ip_list(1) = "192.168.1.102"
 '	modbus_slaves_ip_list(2) = "192.168.1.51"
-	
-	
-	
+
 end function
 
 sub modbus_slavemode_tcp_recieve(byref data as string, tcp_sock as byte)
@@ -100,7 +101,7 @@ sub modbus_slavemode_tcp_recieve(byref data as string, tcp_sock as byte)
 						modbusVal = sock.statesimple 
 						modbus_str = modbus_str + chr((modbusVal shr 8) and &Hff) + chr(modbusVal and &Hff)
 					else 
-						modbusVal = 14 'someting you need
+						modbusVal = 15 'someting you need
 						modbus_str = modbus_str + chr((modbusVal shr 8) and &hff) + chr(modbusVal and &hff)
 					end if
 				next i
