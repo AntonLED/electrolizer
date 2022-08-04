@@ -57,3 +57,5 @@ declare function modbus_callback_WriteSingleCoil(address as word, value as low_h
 declare function modbus_callback_ReadCoilStatus(address as word) as byte
 declare function float32_to_dec(byref data as string) as float
 
+declare sub delay(time as dword)
+
