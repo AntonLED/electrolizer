@@ -8,15 +8,6 @@ dim cur_slave_num as byte = 0
 
 dim tcp_pack_len as word
 
-
-sub delay(time as dword)
-	dim count as dword = sys.timercountms
-	while sys.timercountms - count < time 
-	wend
-	doevents
-end sub
-
-
 sub on_sys_init()
 	boot()
 end sub
@@ -65,20 +56,6 @@ end sub
 
 '	sys.debugprint("--------------------\n")
 'end sub
-
-sub on_sys_timer()
-	sys.debugprint("\n\n")
-	dim i as byte 
-	for i = 0 to MODBUS_SLAVEMODE_SOCKS_MAX - 1
-		sock.num = modbus_slavemode_socks(i).socket
-		sys.debugprint("cur state of sock " + str(sock.num) + " is " + str(sock.state) + "\n")
-	next i
-	sys.debugprint("\n\n")
-end sub
-
-sub on_sock_event(state as pl_sock_state, sstate as pl_sock_state_simple)
-	sys.debugprint("	event on sock "+ str(sock.num) + " is " + str(state) + " || ")
-end sub
 
 sub on_sock_data_arrival()
 	dim data as string

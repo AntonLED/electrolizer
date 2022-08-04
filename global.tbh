@@ -56,6 +56,3 @@ declare sub modbus_callback_slave_reply(tcp_sock as byte, slave_id as byte, byre
 declare function modbus_callback_WriteSingleCoil(address as word, value as low_high) as boolean
 declare function modbus_callback_ReadCoilStatus(address as word) as byte
 declare function float32_to_dec(byref data as string) as float
-
-declare sub delay(time as dword)
-
