@@ -85,12 +85,6 @@ sub modbus_callback_slave_reply(tcp_sock as byte, slave_id as byte, byref slave_
 	recv_flag = true
 end sub
 
-function float32_to_dec(byref data as string) as float
-	dim sign as word
-	dim exp as word
-	dim mantis as float
-end function
-
 sub transmitt_data(tcp_sock as byte)
 	dim data as string
 	data = ""

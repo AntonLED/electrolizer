@@ -53,15 +53,15 @@ end sub
 
 sub on_sock_data_arrival()
 	dim data as string
-	
+				
 	dim f as byte
 	for f = 0 to MODBUS_SLAVEMODE_SOCKS_MAX - 1
 		if sock.num = modbus_slavemode_socks(f).socket then
 			data = sock.getdata(255)
-			sys.debugprint(sock.remoteip + "\n")
 			modbus_slavemode_tcp_recieve(data, sock.num)
 		end if
 	next f
+	sys.debugprint("\n")
 	
 '	if sock.num = modbus_mastermode_socks(cur_slave_num).socket then 
 '		data = sock.getdata(255)
