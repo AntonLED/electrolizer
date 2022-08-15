@@ -5,7 +5,7 @@ src_lib_ver=2_01_05
 name=electrolizer
 output=electrolizer.tpc
 debug=off
-defines=
+defines= 
 transport=udp_broadcast
 [address1]
 platform=TPP3W(G2)

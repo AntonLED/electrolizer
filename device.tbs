@@ -47,6 +47,25 @@ function modbus_callback_WriteSingleCoil(addr as word, value as low_high) as boo
 	end select
 end function
 
+function modbus_callback_ReadCoilStatus(addr as word) as byte
+	select case addr
+		case LN1_STATE_ADDR:
+			io.num=TBT00_1_S3_L1NAME
+			modbus_callback_ReadCoilStatus = io.state
+		case LN2_STATE_ADDR:
+			io.num=TBT00_1_S3_L2NAME
+			modbus_callback_ReadCoilStatus = io.state
+		case LN3_STATE_ADDR:
+			io.num=TBT00_1_S3_L3NAME
+			modbus_callback_ReadCoilStatus = io.state
+		case LN4_STATE_ADDR:
+			io.num=TBT00_1_S3_L4NAME
+			modbus_callback_ReadCoilStatus = io.state
+		case else:
+			modbus_callback_ReadCoilStatus = 0
+	end select
+end function
+
 sub modbus_callback_slave_reply(tcp_sock as byte, slave_id as byte, byref slave_reply as string)
 	dim bytes as byte(255) = slave_reply 
 	

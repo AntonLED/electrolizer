@@ -14,6 +14,11 @@ const LN2_ADDR = 2
 const LN3_ADDR = 3
 const LN4_ADDR = 4
 const LN1_LN2_ADDR = 5
+
+const LN1_STATE_ADDR = 1
+const LN2_STATE_ADDR = 2
+const LN3_STATE_ADDR = 3
+const LN4_STATE_ADDR = 4
 'setup EEPROM addresses
 const LN1_E_ADDR = 1
 const LN2_E_ADDR = 2
@@ -49,5 +54,6 @@ declare deivice_net_gateway as string
 declare sub boot()
 declare sub modbus_callback_slave_reply(tcp_sock as byte, slave_id as byte, byref slave_reply as string)
 declare function modbus_callback_WriteSingleCoil(address as word, value as low_high) as boolean
+declare function modbus_callback_ReadCoilStatus(address as word) as byte
 declare function float32_to_dec(byref data as string) as float
 
